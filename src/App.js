@@ -8,6 +8,18 @@ const POSSIBLE_TARGETS = [
   "all units"
 ];
 
+const TEMPLATES = [
+  <>
+    Deal damage to <RandomTargetType/>
+  </>,
+  <>
+    Force
+    <RandomTargetType/>
+    to attack
+    <RandomTargetType/>
+  </>
+];
+
 function App() {
 
   return (
@@ -23,6 +35,7 @@ class AbilityTemplate extends React.Component {
     super(props);
     this.state = {templateId: 0};
     this.pickRandomTemplate = this.pickRandomTemplate.bind(this);
+    this.getTemplateFragment = this.getTemplateFragment.bind(this);
   }
 
   componentDidMount() {
@@ -30,16 +43,27 @@ class AbilityTemplate extends React.Component {
   }
 
   pickRandomTemplate() {
-    // TODO meaningless for now, use length when there is a real list to choose from
-    const randomTemplate = randomInt(10);
-    this.setState({
-      templateId : randomTemplate
+    // avoid repeats so it feels more random (conveniently, also makes state change certain)
+    function newRandomTemplate (omit) {
+        let chosenTemplate = randomInt(TEMPLATES.length - 1);
+        return chosenTemplate >= omit ? chosenTemplate + 1: chosenTemplate;
+    };
+  
+    this.setState((state) => {
+      return {templateId : newRandomTemplate(state.templateId)};
     });
   }
 
+  getTemplateFragment() {
+    return (
+      <div>
+        {pickSafely(this.state.templateId, TEMPLATES)}
+      </div>
+    )
+  }
+
   render() {
-    // TODO cond render when we have multiple templates
-    let generatedFragment = <RandomTargetType/>;
+    let generatedFragment = this.getTemplateFragment();
     return (
       <div id="content-main">
         <div className="text-content">
@@ -53,8 +77,7 @@ class AbilityTemplate extends React.Component {
 }
 
 function RandomTargetType() {
-  const maxTargetsPossible = POSSIBLE_TARGETS.length;
-  const targetInd = randomInt(maxTargetsPossible);
+  const targetInd = randomInt(POSSIBLE_TARGETS.length);
 
   return (
     <TargetType selectionIndex={targetInd}/>
@@ -66,12 +89,15 @@ function TargetType(props) {
 
   return (
     <div>
-      {selectionIndex < POSSIBLE_TARGETS.length 
-      ? POSSIBLE_TARGETS[selectionIndex]
-      : '???'
-      }
+      {pickSafely(selectionIndex, POSSIBLE_TARGETS)}
     </div>
   );
+}
+
+function pickSafely(targetIndex, sourceList) {
+  return targetIndex < sourceList.length 
+  ? sourceList[targetIndex]
+  : '???'
 }
 
 function randomInt(max) {
