@@ -1,41 +1,31 @@
 import React from 'react';
+import * as utils from './Utils.js';
+import POSSIBLE_TARGETS from './TargetPicker.js'
 import './App.css';
-// TODO as the structure comes into place, start breaking things off
-
-const POSSIBLE_TARGETS = [
-  "allies",
-  "enemies",
-  "all units"
-];
-
-const TEMPLATES = [
-  <>
-    Deal damage to <RandomTargetType/>
-  </>,
-  <>
-    Force
-    <RandomTargetType/>
-    to attack
-    <RandomTargetType/>
-  </>
-];
 
 function App() {
 
   return (
     <div id="backbox">
       <div id="topbar">Random Ability Generator</div>
-          <AbilityTemplate/>
+          <PhraseTemplate isTop={true} template={TEMPLATES} parent="top"/>
     </div>
   );
 }
 
-class AbilityTemplate extends React.Component {
+/**
+ * template prop defines the phrase list to use
+ * isTop prop defines whether the phrase should be rendered with wrappings
+ * canReroll prop decides whether the template can be clicked on to reroll its value
+ * parent prop can be used to differentiate between templates higher up
+ */
+class PhraseTemplate extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {templateId: 0};
+    this.state = {templateId: -1};
     this.pickRandomTemplate = this.pickRandomTemplate.bind(this);
     this.getTemplateFragment = this.getTemplateFragment.bind(this);
+    this.getTopLevelFragment = this.getTopLevelFragment.bind(this);
   }
 
   componentDidMount() {
@@ -44,64 +34,56 @@ class AbilityTemplate extends React.Component {
 
   pickRandomTemplate() {
     // avoid repeats so it feels more random (conveniently, also makes state change certain)
-    function newRandomTemplate (omit) {
-        let chosenTemplate = randomInt(TEMPLATES.length - 1);
-        return chosenTemplate >= omit ? chosenTemplate + 1: chosenTemplate;
-    };
-  
-    this.setState((state) => {
-      return {templateId : newRandomTemplate(state.templateId)};
+    this.setState((state, props) => {
+      return {templateId : utils.randomIntOmitting(state.templateId, props.template.length)};
     });
   }
 
   getTemplateFragment() {
     return (
       <div>
-        {pickSafely(this.state.templateId, TEMPLATES)}
+        {utils.pickSafely(this.state.templateId, this.props.template)}
       </div>
     )
   }
 
-  render() {
-    let generatedFragment = this.getTemplateFragment();
+  getTopLevelFragment() {
     return (
       <div id="content-main">
         <div className="text-content">
-          {generatedFragment}
+          {this.getTemplateFragment()}
           <p>Template #: {this.state.templateId}</p>
         </div>
         <button className="btn" onClick={this.pickRandomTemplate}>Another One!</button>
       </div>
     )
   }
+
+  render() {
+    // TODO rerolling logic
+
+    let generatedFragment = this.props.isTop ?
+      this.getTopLevelFragment() :
+      this.getTemplateFragment()
+    ;
+    
+    return (
+      <>{generatedFragment}</>
+    )
+  }
 }
 
-function RandomTargetType() {
-  const targetInd = randomInt(POSSIBLE_TARGETS.length);
-
-  return (
-    <TargetType selectionIndex={targetInd}/>
-  );
-}
-
-function TargetType(props) {
-  const selectionIndex = props.selectionIndex;
-
-  return (
-    <div>
-      {pickSafely(selectionIndex, POSSIBLE_TARGETS)}
-    </div>
-  );
-}
-
-function pickSafely(targetIndex, sourceList) {
-  return targetIndex < sourceList.length 
-  ? sourceList[targetIndex]
-  : '???'
-}
-
-function randomInt(max) {
-  return Math.floor(Math.random() * Math.floor(max));
-}
+// TODO react is too smart and doesn't want to reroll these when changed
+const TEMPLATES = [
+  <div className="ability-content">
+    Deal damage to <PhraseTemplate isTop={false} template={POSSIBLE_TARGETS}/>
+  </div>,
+  <div className="ability-content">
+    Force
+    <PhraseTemplate isTop={false} template={POSSIBLE_TARGETS}/>
+    to attack
+    <PhraseTemplate isTop={false} template={POSSIBLE_TARGETS}/>
+  </div>
+];
 
 export default App;
