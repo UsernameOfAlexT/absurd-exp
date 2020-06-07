@@ -8,7 +8,7 @@ function App() {
   return (
     <div id="backbox">
       <div id="topbar">Random Ability Generator</div>
-          <PhraseTemplate isTop={true} template={TEMPLATES} parent="top"/>
+          <PhraseTemplate isTop={true} template={TEMPLATES} canBeRerolled={false}/>
     </div>
   );
 }
@@ -16,8 +16,7 @@ function App() {
 /**
  * template prop defines the phrase list to use
  * isTop prop defines whether the phrase should be rendered with wrappings
- * canReroll prop decides whether the template can be clicked on to reroll its value
- * parent prop can be used to differentiate between templates higher up
+ * canBeRerolled defines whether it should be clickable to reroll
  */
 class PhraseTemplate extends React.Component {
   constructor(props) {
@@ -26,24 +25,49 @@ class PhraseTemplate extends React.Component {
     this.pickRandomTemplate = this.pickRandomTemplate.bind(this);
     this.getTemplateFragment = this.getTemplateFragment.bind(this);
     this.getTopLevelFragment = this.getTopLevelFragment.bind(this);
+    this.setTemplateIdInRange = this.setTemplateIdInRange.bind(this);
   }
 
   componentDidMount() {
     this.pickRandomTemplate();
   }
 
-  pickRandomTemplate() {
-    // avoid repeats so it feels more random (conveniently, also makes state change certain)
+  /**
+   * Pick a random valid template
+   * @param {boolean} avoidPrevious  avoid the previous template to 'feel' more random
+   */
+  pickRandomTemplate(avoidPrevious) {
+    let cachedId = avoidPrevious ?
+    this.state.templateId :
+    -1
+    // to ensure children get randomized, blank this out first to force remounting TODO is there a better way?
+    this.setState(() => {
+      return {templateId : -1};
+    }, () => this.setTemplateIdInRange(cachedId));
+  }
+
+  /**
+   * Set template id to a random valid one that is not the given
+   * @param {number} cachedId id to omit, negatives mean do not omit
+   */
+  setTemplateIdInRange(cachedId) {
     this.setState((state, props) => {
-      return {templateId : utils.randomIntOmitting(state.templateId, props.template.length)};
+      return {templateId : utils.randomIntOmitting(cachedId, props.template.length)};
     });
   }
 
   getTemplateFragment() {
+    let generatedFragment = this.state.templateId === -1 ?
+      <></> :
+      <>{utils.pickSafely(this.state.templateId, this.props.template)}</>
+    ;
+
+    if (this.props.canBeRerolled) {
+      generatedFragment = <div className="rerollable" onClick={() => this.pickRandomTemplate(true)}>{generatedFragment}</div>;
+    }
+
     return (
-      <div>
-        {utils.pickSafely(this.state.templateId, this.props.template)}
-      </div>
+      generatedFragment
     )
   }
 
@@ -54,17 +78,15 @@ class PhraseTemplate extends React.Component {
           {this.getTemplateFragment()}
           <p>Template #: {this.state.templateId}</p>
         </div>
-        <button className="btn" onClick={this.pickRandomTemplate}>Another One!</button>
+        <button className="btn" onClick={() => this.pickRandomTemplate(false)}>Another One!</button>
       </div>
     )
   }
 
   render() {
-    // TODO rerolling logic
-
     let generatedFragment = this.props.isTop ?
       this.getTopLevelFragment() :
-      this.getTemplateFragment()
+      <div className="nested-phrase">{this.getTemplateFragment()}</div>
     ;
     
     return (
@@ -73,16 +95,15 @@ class PhraseTemplate extends React.Component {
   }
 }
 
-// TODO react is too smart and doesn't want to reroll these when changed
 const TEMPLATES = [
   <div className="ability-content">
-    Deal damage to <PhraseTemplate isTop={false} template={POSSIBLE_TARGETS}/>
+    Deal damage to <PhraseTemplate isTop={false} template={POSSIBLE_TARGETS} canBeRerolled={true}/>
   </div>,
   <div className="ability-content">
     Force
-    <PhraseTemplate isTop={false} template={POSSIBLE_TARGETS}/>
+    <PhraseTemplate isTop={false} template={POSSIBLE_TARGETS} canBeRerolled={true}/>
     to attack
-    <PhraseTemplate isTop={false} template={POSSIBLE_TARGETS}/>
+    <PhraseTemplate isTop={false} template={POSSIBLE_TARGETS} canBeRerolled={true}/>
   </div>
 ];
 
