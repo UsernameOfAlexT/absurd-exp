@@ -25,15 +25,20 @@
 .ability-content {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   justify-content: center;
 }
 
 .nested-phrase {
   margin: 0 0.25em 0;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .rerollable {
-  color: rosybrown;
+  color: sienna;
   transition: color .8s;
 }
 
