@@ -64,7 +64,6 @@ class PhraseTemplate extends React.Component {
       <div id="content-main">
         <div className="text-content">
           {this.getTemplateFragment()}
-          <p>Template #: {this.state.templateId}</p>
         </div>
         <button className="btn" onClick={() => this.pickRandomTemplate(false)}>Another One!</button>
       </div>
