@@ -1,6 +1,7 @@
 import React from 'react';
 import TEMPLATES from './phrasebook/FullPhrasePicker.js'
 import PhraseTemplate from './phrasebook/PhraseTemplate.js'
+import DrawTrial from './movingparts/DrawTrial.js'
 import './App.css';
 
 /**
@@ -65,6 +66,12 @@ function App() {
   );
 }
 
+const drawTrial = {
+  title: "Canvas Trial",
+  content: <DrawTrial/>,
+  description: "Trying random stuff with the canvas. Looks kinda cool, I guess"
+}
+
 const abilityGen = {
   title: "Random Terrible Ability Generator",
   content: <PhraseTemplate isTop={true} template={TEMPLATES} canBeRerolled={false}/>,
@@ -72,7 +79,7 @@ const abilityGen = {
 }
 
 const welcome = {
-  title: "Gallery of Pointless Creations",
+  title: "Gallery of Meaningless Creations",
   content: <></>,
   description: "Collection of random pointless things. Not useful, but I still love them. " + 
   "This is a welcome page, so there is nothing here. " + 
@@ -81,7 +88,8 @@ const welcome = {
 
 const appPicker = [
   welcome,
-  abilityGen
+  abilityGen,
+  drawTrial
 ]
 
 export default App;
