@@ -69,7 +69,8 @@ function App() {
 const drawTrial = {
   title: "Canvas Trial",
   content: <DrawTrial/>,
-  description: "Trying random stuff with the canvas. Looks kinda cool, I guess"
+  description: "Trying random stuff with the canvas. Looks kinda cool, I guess. " +
+  "Some strangeness might occur as roundoff makes stuff imprecise"
 }
 
 const abilityGen = {

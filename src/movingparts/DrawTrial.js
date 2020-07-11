@@ -1,12 +1,14 @@
 import React from 'react';
+import '../style/drawtrial.css';
 
 const CANVASID = "drawtrial-canvas"
 const CANVAS_WIDTH = 512;
 const CANVAS_HEIGHT = 512;
 const OBJ_WIDTH = 8;
 const OBJ_HEIGHT = 8;
-const MAX_POINTS_ALLOWED = 90;
+const MAX_POINTS_ALLOWED = 128;
 const MAX_SPEED = 10;
+const ACCEL_RANGE = 0.5;
 
 class DrawTrial extends React.Component {
   constructor(props) {
@@ -14,10 +16,14 @@ class DrawTrial extends React.Component {
     // canvas can handle most things on its own
     this.state = {
       pts: 8,
-      radius: 20
+      radius: 20,
+      speed: 1,
+      accel: 0
     };
     this.handleRadiusUpdate = this.handleRadiusUpdate.bind(this);
     this.handlePointCountUpdate = this.handlePointCountUpdate.bind(this);
+    this.handleSpeedUpdate = this.handleSpeedUpdate.bind(this);
+    this.handleAccelUpdate = this.handleAccelUpdate.bind(this);
     this.timeId = -1;
     this.cachedCanvas = null;
     this.coords = [];
@@ -45,6 +51,14 @@ class DrawTrial extends React.Component {
 
   handlePointCountUpdate(e) {
     this.setState({pts: e.target.value});
+  }
+
+  handleSpeedUpdate(e) {
+    this.setState({speed: e.target.value});
+  }
+
+  handleAccelUpdate(e) {
+    this.setState({accel: e.target.value});
   }
 
   tick() {
@@ -140,16 +154,17 @@ class DrawTrial extends React.Component {
 
     for (let i = 0; i < this.state.pts; i++) {
       let newCoord = this.getCoordFromCentre(canvasCenX, canvasCenY, curOffset, this.state.radius);
-      // TODO radial accel
+      let newV = this.getNormalizedOutwardV(curOffset);
+
       newCoords.push({
         x: newCoord.x,
         y: newCoord.y,
-        xv:1.5, 
-        yv:1.2,
+        xv: newV.xv * this.state.speed, 
+        yv: newV.yv * this.state.speed,
         xvdec:0,
         yvdec:0,
-        xa:0,
-        ya:0,
+        xa: newV.xv * this.state.accel,
+        ya: newV.yv * this.state.accel,
         hitx: false,
         hity: false
       });
@@ -165,6 +180,12 @@ class DrawTrial extends React.Component {
      let yfinal = ycen + ydelta;
      return {x: xfinal, y: yfinal}
   }
+  
+  getNormalizedOutwardV(radialOffset) {
+    let xdelta = Math.cos(radialOffset);
+    let ydelta = Math.sin(radialOffset);
+    return {xv: xdelta, yv: ydelta}
+  }
 
   render() {
     return (
@@ -172,10 +193,16 @@ class DrawTrial extends React.Component {
         <canvas id={CANVASID} width={CANVAS_WIDTH} height={CANVAS_HEIGHT}>
           Canvas appears to be unsupported :(
         </canvas>
-        <input type="range" id="radius" min="0" max={CANVAS_WIDTH / 2 - 20} onChange={this.handleRadiusUpdate}/>
-        <label for ="radius">Radius</label>
-        <input type="range" id="points" min="1" max={MAX_POINTS_ALLOWED} onChange={this.handlePointCountUpdate}/>
-        <label for ="points">Number of Points</label>
+        <div id="canvas-controls">
+          <input type="range" id="radius" min="0" max={CANVAS_WIDTH / 2 - 20} onChange={this.handleRadiusUpdate}/>
+          <label for ="radius">Radius</label>
+          <input type="range" id="points" min="1" max={MAX_POINTS_ALLOWED} onChange={this.handlePointCountUpdate}/>
+          <label for ="points">Number of Points</label>
+          <input type="range" id="speed" min={-MAX_SPEED} max={MAX_SPEED} step="0.1" onChange={this.handleSpeedUpdate}/>
+          <label for ="speed">Speed</label>
+          <input type="range" id="accel" min={-ACCEL_RANGE} max={ACCEL_RANGE} step="0.1" onChange={this.handleAccelUpdate}/>
+          <label for ="accel">Acceleration</label>
+        </div>
       </div>
     )
   }

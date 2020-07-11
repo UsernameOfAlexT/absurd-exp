@@ -1,0 +1,6 @@
+#canvas-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: calc(8px + 2vmin);
+}
