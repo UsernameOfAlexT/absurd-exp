@@ -195,13 +195,13 @@ class DrawTrial extends React.Component {
         </canvas>
         <div id="canvas-controls">
           <input type="range" id="radius" min="0" max={CANVAS_WIDTH / 2 - 20} onChange={this.handleRadiusUpdate}/>
-          <label for ="radius">Radius</label>
+          <label htmlFor ="radius">Radius</label>
           <input type="range" id="points" min="1" max={MAX_POINTS_ALLOWED} onChange={this.handlePointCountUpdate}/>
-          <label for ="points">Number of Points</label>
+          <label htmlFor ="points">Number of Points</label>
           <input type="range" id="speed" min={-MAX_SPEED} max={MAX_SPEED} step="0.1" onChange={this.handleSpeedUpdate}/>
-          <label for ="speed">Speed</label>
+          <label htmlFor ="speed">Speed</label>
           <input type="range" id="accel" min={-ACCEL_RANGE} max={ACCEL_RANGE} step="0.1" onChange={this.handleAccelUpdate}/>
-          <label for ="accel">Acceleration</label>
+          <label htmlFor ="accel">Acceleration</label>
         </div>
       </div>
     )
