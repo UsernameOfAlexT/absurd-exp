@@ -78,6 +78,7 @@ const drawTrial = {
   title: "Canvas Trial",
   content: <DrawTrial/>,
   description: "Trying random stuff with the canvas. Looks kinda cool, I guess. " +
+  "There is a slight variance to the angle they go off in, so it eventually degenerates into a cloud." +
   "Some strangeness might occur as roundoff makes stuff imprecise"
 }
 

@@ -10,6 +10,14 @@ export function randomInt(max) {
 
 /**
  * 
+ * @param {number} max maximum in either positive or negative direction
+ */
+export function randomIntEitherSign(max) {
+    return randomInt(2) > 0 ? randomInt(max) : - randomInt(max);
+}
+
+/**
+ * 
  * @param {number} omit omitted index when randomizing. Negatives mean do not omit
  * @param {number} max non inclusive maximum
  */

@@ -1,4 +1,5 @@
 import React from 'react';
+import * as utils from '../Utils.js';
 import '../style/drawtrial.css';
 
 const CANVASID = "drawtrial-canvas"
@@ -154,7 +155,9 @@ class DrawTrial extends React.Component {
 
     for (let i = 0; i < this.state.pts; i++) {
       let newCoord = this.getCoordFromCentre(canvasCenX, canvasCenY, curOffset, this.state.radius);
-      let newV = this.getNormalizedOutwardV(curOffset);
+      // up to pi / 4 either way
+      let randomVariance = utils.randomInt(2) > 0 ? utils.randomInt(9) * Math.PI / 32 : -utils.randomInt(9) * Math.PI / 32;
+      let newV = this.getNormalizedOutwardV(curOffset + randomVariance);
 
       newCoords.push({
         x: newCoord.x,
