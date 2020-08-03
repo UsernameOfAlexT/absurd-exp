@@ -1,6 +1,7 @@
 import React from 'react';
 import * as utils from '../Utils.js';
 import '../style/drawtrial.css';
+import '../style/commondraw.css';
 
 const CANVASID = "drawtrial-canvas"
 const CANVAS_WIDTH = 512;
@@ -192,7 +193,7 @@ class DrawTrial extends React.Component {
 
   render() {
     return (
-      <div>
+      <div className="canvas-container">
         <canvas id={CANVASID} width={CANVAS_WIDTH} height={CANVAS_HEIGHT}>
           Canvas appears to be unsupported :(
         </canvas>
