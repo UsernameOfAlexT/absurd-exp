@@ -3,6 +3,7 @@ import TEMPLATES from './phrasebook/FullPhrasePicker.js'
 import PhraseTemplate from './phrasebook/PhraseTemplate.js'
 import DrawTrial from './movingparts/DrawTrial.js'
 import Spiral from './movingparts/Spiral.js'
+import Agents from './movingparts/Agents.js'
 import './App.css';
 
 /**
@@ -67,6 +68,13 @@ function App() {
   );
 }
 
+const agent = {
+  title: "Independent Agents",
+  content: <Agents/>,
+  description: "Trying even more random stuff with the canvas." +
+  " Playing around with having each point act independently in a sorta swarm-like way"
+}
+
 const spiral = {
   title: "Moiré Effect",
   content: <Spiral/>,
@@ -100,7 +108,8 @@ const appPicker = [
   welcome,
   abilityGen,
   drawTrial,
-  spiral
+  spiral,
+  agent
 ]
 
 export default App;
