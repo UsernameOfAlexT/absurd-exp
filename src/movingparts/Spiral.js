@@ -50,30 +50,14 @@ function randGenerator(pointsToGen) {
   return newCoords;
 }
 
-// varFunction should take the step for that dimension, then return some offset amount
-function uniformBaseGenerator(pointsToGen, varFunction) {
-  let newCoords = [];
-  // premature optimization is the root of all evil; but this can probably be better
-  let ptsPerSide = Math.ceil(Math.sqrt(pointsToGen));
-  let ystep = Math.round(CANVAS_HEIGHT / ptsPerSide);
-  let xstep = Math.round(CANVAS_WIDTH / ptsPerSide);
-  for (let i = 0; i < ptsPerSide; i++) {
-    for (let j = 0; j < ptsPerSide; j++) {
-      newCoords.push({
-        x: xstep * i + Math.round(xstep / 2) + varFunction(xstep),
-        y: ystep * j + Math.round(ystep / 2) + varFunction(ystep)
-      });
-    }
-  }
-  return newCoords;
-}
-
 function uniformGenerator(pointsToGen) {
-  return uniformBaseGenerator(pointsToGen, (step) => 0);
+  return utils.uniformBaseGenerator(pointsToGen, (step) => 0,
+   CANVAS_HEIGHT, CANVAS_WIDTH);
 }
 
 function uniformGeneratorWithVariance(pointsToGen) {
-  return uniformBaseGenerator(pointsToGen, (step) => utils.randomIntEitherSign(step/2));
+  return utils.uniformBaseGenerator(pointsToGen, (step) => utils.randomIntEitherSign(step/2),
+   CANVAS_HEIGHT, CANVAS_WIDTH);
 }
 
 class Spiral extends React.Component {

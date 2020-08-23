@@ -3,24 +3,34 @@ import * as utils from '../Utils.js';
 import '../style/drawtrial.css';
 import '../style/commondraw.css';
 
-const CANVASID = "drawtrial-canvas"
+const CANVASID = "swarm-canvas"
 const CANVAS_WIDTH = 512;
 const CANVAS_HEIGHT = 512;
 const OBJ_WIDTH = 8;
 const OBJ_HEIGHT = 8;
 const MAX_SPEED = 10;
+const MAX_POINTS_ALLOWED = 64;
+const LOGISTIC_STEEPNESS = 0.05;
+const LOGISTIC_MIDPOINT = 50; // in pixels
+const PTS_GENERATORS = {
+  random: randGenerator,
+  uniformVar : uniformGeneratorWithVariance
+}
 
 class Agents extends React.Component {
   constructor(props) {
     super(props);
     // canvas can handle most things on its own
     this.state = {
+      pointdist: 'random',
+      attrepthreshold: LOGISTIC_MIDPOINT,
+      attrepforce: MAX_SPEED / 2,
       pts: 32,
     };
-    // this.handleRadiusUpdate = this.handleRadiusUpdate.bind(this);
-    // this.handlePointCountUpdate = this.handlePointCountUpdate.bind(this);
-    // this.handleSpeedUpdate = this.handleSpeedUpdate.bind(this);
-    // this.handleAccelUpdate = this.handleAccelUpdate.bind(this);
+    this.handleAttRepThresholdUpdate = this.handleAttRepThresholdUpdate.bind(this);
+    this.handleAttRepForceUpdate = this.handleAttRepForceUpdate.bind(this);
+    this.handleDistUpdate = this.handleDistUpdate.bind(this);
+    this.handlePointCountUpdate = this.handlePointCountUpdate.bind(this);
     this.timeId = -1;
     this.cachedCanvas = null;
     this.coords = [];
@@ -42,21 +52,21 @@ class Agents extends React.Component {
     clearInterval(this.timeId);
   }
 
-  // handleRadiusUpdate(e) {
-  //   this.setState({radius: e.target.value});
-  // }
+  handleAttRepThresholdUpdate(e) {
+    this.setState({attrepthreshold: e.target.value});
+  }
 
-  // handlePointCountUpdate(e) {
-  //   this.setState({pts: e.target.value});
-  // }
+  handleAttRepForceUpdate(e) {
+    this.setState({attrepforce: e.target.value});
+  }
 
-  // handleSpeedUpdate(e) {
-  //   this.setState({speed: e.target.value});
-  // }
+  handleDistUpdate(e) {
+    this.setState({pointdist: e.target.value});
+  }
 
-  // handleAccelUpdate(e) {
-  //   this.setState({accel: e.target.value});
-  // }
+  handlePointCountUpdate(e) {
+    this.setState({pts: e.target.value});
+  }
 
   tick() {
     if (!this.cachedCanvas) {
@@ -118,12 +128,12 @@ class Agents extends React.Component {
       }
 
       let distsqrd = Math.pow(xdelta, 2) + Math.pow(ydelta, 2);
-      let magnitude = this.logistic(Math.sqrt(distsqrd), MAX_SPEED/2);
+      let magnitude = this.logistic(Math.sqrt(distsqrd), this.state.attrepforce);
       let angleRep = Math.abs(Math.atan(ydelta/xdelta));
 
       // repelling when close, attracting o/w
-      let xdirection = Math.sqrt(distsqrd) < 60 ? Math.sign(xdelta) : - Math.sign(xdelta);
-      let ydirection = Math.sqrt(distsqrd) < 60 ? Math.sign(ydelta) : - Math.sign(ydelta);
+      let xdirection = Math.sqrt(distsqrd) < this.state.attrepthreshold ? Math.sign(xdelta) : - Math.sign(xdelta);
+      let ydirection = Math.sqrt(distsqrd) < this.state.attrepthreshold ? Math.sign(ydelta) : - Math.sign(ydelta);
 
       currentXApplied += xdirection * (magnitude * Math.cos(angleRep));
       currentYApplied += ydirection * (magnitude * Math.sin(angleRep));
@@ -136,7 +146,7 @@ class Agents extends React.Component {
   }
 
   logistic(x, max) {
-    return max / (1 + Math.exp(0.05 * (x - 50)));
+    return max / (1 + Math.exp(LOGISTIC_STEEPNESS * (x - LOGISTIC_MIDPOINT)));
   }
 
   // TODO this should be some sort of common func
@@ -162,7 +172,7 @@ class Agents extends React.Component {
   }
 
   initCoords() {
-    this.coords = randGenerator(this.state.pts);
+    this.coords = PTS_GENERATORS[this.state.pointdist](this.state.pts);
   }
 
   render() {
@@ -172,7 +182,16 @@ class Agents extends React.Component {
           Canvas appears to be unsupported :(
         </canvas>
         <div id="canvas-controls">
-          
+          <input type="range" id="points" min="2" max={MAX_POINTS_ALLOWED} onChange={this.handlePointCountUpdate}/>
+          <label htmlFor ="points">Number of Points</label>
+          <input type="range" id="threshold" min={LOGISTIC_MIDPOINT / 2} max={LOGISTIC_MIDPOINT * 2} onChange={this.handleAttRepThresholdUpdate}/>
+          <label htmlFor ="threshold">Attraction/Repulsion Distance Threshold</label>
+          <input type="range" id="force" min="0" max={MAX_SPEED} onChange={this.handleAttRepForceUpdate}/>
+          <label htmlFor ="force">Attraction/Repulsion Force</label>
+          <select id="distribution" onChange={this.handleDistUpdate}>
+            <option value="random">Random Distribution</option>
+            <option value="uniformVar">Uniform Distribution with random variance</option>
+          </select>
         </div>
       </div>
     )
@@ -190,6 +209,25 @@ function randGenerator(pointsToGen) {
     });
   }
   return newCoords;
+}
+
+function uniformGeneratorWithVariance(pointsToGen) {
+  let rawcoords = utils.uniformBaseGenerator(pointsToGen, (step) => utils.randomIntEitherSign(step/4),
+   CANVAS_HEIGHT, CANVAS_WIDTH);
+  return rawcoords.map(coordsToCoordsWithVelocity);
+}
+
+/**
+ * Adapter to turn coordinates with just x & y into coordinates
+ *  with position and velocity
+ */
+function coordsToCoordsWithVelocity(baseCoord) {
+  return {
+    x: baseCoord.x,
+    y: baseCoord.y,
+    xv: 0,
+    yv: 0
+  }
 }
 
 export default Agents;
